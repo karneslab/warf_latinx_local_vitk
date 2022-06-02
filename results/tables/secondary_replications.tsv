@@ -1,0 +1,22 @@
+gene	rsid	HWE	Allele	Cohort	Model	Ancestry	Effect Size	P-value
+NA	also-oops	oops	AG	Tucson	Tractor	EUR	4.209 (±3.852)	0.277
+NA	also-oops	oops	AG	Tucson	Tractor	EUR	-	-
+NA	also-oops	oops	AG	San Juan	Tractor	EUR	7.499 (±2.732)	0.007
+NA	also-oops	oops	AG	Tucson	IWPC	EUR	3.78 (±2.24)	0.09
+NA	also-oops	oops	AG	Tucson	IWPC	EUR	-	-
+NA	also-oops	oops	AG	San Juan	IWPC	EUR	5.39 (±4.11)	0.19
+NA	also-oops	oops	AG	San Juan	IWPC	EUR	19.12 (±6.56)	0
+NA	also-oops	oops	AG	Tucson	Tractor	NAT	14.333 (±4.804)	0.003
+NA	also-oops	oops	AG	Tucson	Tractor	NAT	-	-
+NA	also-oops	oops	AG	San Juan	Tractor	NAT	3.561 (±13.217)	0.788
+NA	also-oops	oops	AG	Tucson	IWPC	NAT	3.78 (±2.24)	0.09
+NA	also-oops	oops	AG	Tucson	IWPC	NAT	-	-
+NA	also-oops	oops	AG	San Juan	IWPC	NAT	5.39 (±4.11)	0.19
+NA	also-oops	oops	AG	San Juan	IWPC	NAT	19.12 (±6.56)	0
+NA	also-oops	oops	AG	Tucson	Tractor	AFR	8.095 (±15.967)	0.613
+NA	also-oops	oops	AG	Tucson	Tractor	AFR	-	-
+NA	also-oops	oops	AG	San Juan	Tractor	AFR	5.833 (±12.248)	0.635
+NA	also-oops	oops	AG	Tucson	IWPC	AFR	3.78 (±2.24)	0.09
+NA	also-oops	oops	AG	Tucson	IWPC	AFR	-	-
+NA	also-oops	oops	AG	San Juan	IWPC	AFR	5.39 (±4.11)	0.19
+NA	also-oops	oops	AG	San Juan	IWPC	AFR	19.12 (±6.56)	0

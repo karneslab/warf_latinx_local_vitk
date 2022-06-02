@@ -1,0 +1,73 @@
+gene	allele	cohort	estimate	std.error	p.value
+KYNU	C_A	Tucson	3.88	2.12	0.07
+KYNU	C_A	Tucson	4.3	2.59	0.1
+KYNU	G_A	Tucson	3.52	2.14	0.1
+KYNU	G_A	Tucson	4.12	2.61	0.12
+ACOT12	C_T	Tucson	-0.27	2.18	0.9
+ACOT12	C_T	Tucson	4.05	2.71	0.14
+ACOT12	G_A	Tucson	-0.27	2.18	0.9
+ACOT12	G_A	Tucson	4.05	2.71	0.14
+NA	T_C	Tucson	3.73	4.34	0.39
+LMBRD1	C_G	Tucson	-1.32	2.12	0.54
+LMBRD1	C_G	Tucson	9.08	5.61	0.11
+LMBRD1	A_AT	Tucson	-1.29	2.14	0.55
+LMBRD1	A_AT	Tucson	9.09	5.61	0.11
+LMBRD1	T_C	Tucson	-1.29	2.14	0.55
+LMBRD1	T_C	Tucson	9.09	5.61	0.11
+MTAP	T_C	Tucson	0.98	2.08	0.64
+MTAP	T_C	Tucson	-0.05	3.26	0.99
+MTAP	A_C	Tucson	0.98	2.08	0.64
+MTAP	A_C	Tucson	-0.05	3.26	0.99
+MTAP	C_T	Tucson	1.25	2.06	0.54
+MTAP	C_T	Tucson	0.07	3.25	0.98
+MTAP	C_T	Tucson	0.98	2.08	0.64
+MTAP	C_T	Tucson	-0.05	3.26	0.99
+GAD2	G_A	Tucson	-11.21	4.23	0.01
+HK1	A_G	Tucson	9.18	3.8	0.02
+HK1	G_A	Tucson	9.18	3.8	0.02
+ACSM6	T_A	Tucson	4.74	2.7	0.08
+LOC107984257	G_C	Tucson	4.74	2.7	0.08
+ME3	A_G	Tucson	1.02	2.1	0.63
+ME3	A_G	Tucson	-1.14	3.24	0.73
+ME3	A_G	Tucson	1.02	2.1	0.63
+ME3	A_G	Tucson	-1.14	3.24	0.73
+COX10	G_A	Tucson	5.45	2.21	0.01
+COX10	G_A	Tucson	7.4	3.71	0.05
+PEMT	G_A	Tucson	4.52	1.94	0.02
+PEMT	G_A	Tucson	1.3	3.32	0.7
+KYNU	C_A	San Juan	7.83	2.94	0.01
+KYNU	C_A	San Juan	6.96	3.03	0.02
+KYNU	G_A	San Juan	8.71	2.86	0
+KYNU	G_A	San Juan	5.65	3.12	0.07
+ACOT12	C_T	San Juan	3.77	2.71	0.17
+ACOT12	C_T	San Juan	12.38	3.79	0
+ACOT12	G_A	San Juan	3.49	2.66	0.19
+ACOT12	G_A	San Juan	12.3	3.8	0
+NA	T_C	San Juan	15.58	5.3	0
+LMBRD1	C_G	San Juan	-3.53	4.07	0.39
+LMBRD1	C_G	San Juan	13.86	5.96	0.02
+LMBRD1	A_AT	San Juan	-3.53	4.07	0.39
+LMBRD1	A_AT	San Juan	13.86	5.96	0.02
+LMBRD1	T_C	San Juan	-3.3	3.66	0.37
+LMBRD1	T_C	San Juan	13.93	5.95	0.02
+MTAP	T_C	San Juan	7.84	3.25	0.02
+MTAP	T_C	San Juan	-2.12	6.71	0.75
+MTAP	A_C	San Juan	7.84	3.25	0.02
+MTAP	A_C	San Juan	-2.12	6.71	0.75
+MTAP	C_T	San Juan	7.84	3.25	0.02
+MTAP	C_T	San Juan	-2.12	6.71	0.75
+MTAP	C_T	San Juan	7.84	3.25	0.02
+MTAP	C_T	San Juan	-2.12	6.71	0.75
+GAD2	G_A	San Juan	-6.57	3.56	0.07
+HK1	A_G	San Juan	20.55	8.15	0.01
+HK1	G_A	San Juan	20.55	8.15	0.01
+ACSM6	T_A	San Juan	5.51	2.99	0.07
+LOC107984257	G_C	San Juan	7.54	3.55	0.04
+ME3	A_G	San Juan	7.52	2.42	0
+ME3	A_G	San Juan	1.08	5.4	0.84
+ME3	A_G	San Juan	7.52	2.42	0
+ME3	A_G	San Juan	1.08	5.4	0.84
+COX10	G_A	San Juan	4.69	2.78	0.1
+COX10	G_A	San Juan	4.06	6.13	0.51
+PEMT	G_A	San Juan	4.56	2.74	0.1
+PEMT	G_A	San Juan	6.29	3.62	0.09

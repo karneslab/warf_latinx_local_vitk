@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+data/
+doc/
+src/archive/
+results/datasets/
+results/plots/rfmix/
+README.Rmarkdown
