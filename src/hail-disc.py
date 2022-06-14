@@ -1,3 +1,4 @@
+#### DISCOVERY COHORT
 #### IN: vitk filtered imputed data
 #### OUT: linear regression summary stats
 #### NOTE: need to change "hapcount" datasets after ExtractTracts.py before this 
@@ -26,9 +27,11 @@ from bokeh.io import save
 
 
 #### set path to data relative to where the plot will be made 
-data_path = 'vitk_phased_autosomes_lifted.99.vcf.gz'
-covar_filename = '../tractor3a_covariates_pr.txt'
-out_path = '2022-06-12_vitk_lm.99.LAadj_pr.tsv'
+
+
+data_path = '../../../../candidate_genes/vitk_phased_autosomes_lifted.90.vcf.gz'
+covar_filename = '../2022-02-17/tractor3a_covariates_az.txt'
+out_path = '2022-06-14_vitk_lm.90.LAadj.tsv'
 
 #### load GWAS data
 ds = hl.import_vcf(data_path, reference_genome='GRCh37', force_bgz = True)
@@ -44,24 +47,24 @@ table = (hl.import_table(covar_filename, impute=True).key_by('plate_id'))
 #### put together genotype information
 #### by ancestry 
 row_fields={'CHROM': hl.tstr, 'POS': hl.tint, 'ID': hl.tstr, 'REF': hl.tstr, 'ALT': hl.tstr} 
-anc0dos = hl.import_matrix_table('phased_autosomes_lifted.99.anc0.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc0dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc0.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc0dos = anc0dos.key_rows_by().drop('row_id')
 anc0dos = anc0dos.key_rows_by(locus=hl.locus(anc0dos.CHROM, anc0dos.POS)) 
 
-anc1dos = hl.import_matrix_table('phased_autosomes_lifted.99.anc1.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc1dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc1.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc1dos = anc1dos.key_rows_by().drop('row_id')
 anc1dos = anc1dos.key_rows_by(locus=hl.locus(anc1dos.CHROM, anc1dos.POS)) 
 
-anc2dos = hl.import_matrix_table('phased_autosomes_lifted.99.anc2.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc2dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc2.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc2dos = anc2dos.key_rows_by().drop('row_id')
 anc2dos = anc2dos.key_rows_by(locus=hl.locus(anc2dos.CHROM, anc2dos.POS)) 
 
 row_fields={'CHROM': hl.tstr, 'POS': hl.tint, 'ID': hl.tstr} 
-hapcounts0 = hl.import_matrix_table('99.anc0.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
+hapcounts0 = hl.import_matrix_table('90.anc0.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
 hapcounts0 = hapcounts0.key_rows_by().drop('row_id')
 hapcounts0 = hapcounts0.key_rows_by(locus=hl.locus(hapcounts0.CHROM, hapcounts0.POS)) 
 
-hapcounts1 = hl.import_matrix_table('99.anc1.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
+hapcounts1 = hl.import_matrix_table('90.anc1.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
 hapcounts1 = hapcounts1.key_rows_by().drop('row_id')
 hapcounts1 = hapcounts1.key_rows_by(locus=hl.locus(hapcounts1.CHROM, hapcounts1.POS)) 
 
@@ -92,7 +95,7 @@ mt = mt.filter_entries(mt.s != '0_0_WARFER034_1767-JK_Karnes_MEGA_Plate_01_E05_W
 #### QC steps 
 mt = hl.variant_qc(mt)
 mt = mt.filter_rows(mt.variant_qc.p_value_hwe > 1e-6)
-mt = mt.filter_rows(mt.variant_qc.AF[1] > 0.01)
+mt = mt.filter_rows(mt.variant_qc.AF[1] > 0.05)
 
 
 
@@ -101,10 +104,10 @@ mt = mt.annotate_rows(unadj = hl.agg.linreg(mt.pheno.dose,[1.0, mt.hapcounts0.x,
 
 #### remove later if find bug? 
 #### write out mt to speed up  later
-mt.write('phenos_genos_dosages_qc_vitk_lm-LAadj.mt', overwrite = True)
+mt.write('phenos_genos_dosages90_qc-maf5_vitk_lm-LAadj.mt', overwrite = True)
 
 #### read that mt back in 
-mt = hl.read_matrix_table('phenos_genos_dosages_qc_vitk_lm-LAadj.mt')
+mt = hl.read_matrix_table('phenos_genos_dosages90_qc-maf5_vitk_lm-LAadj.mt')
 
 #### export steps 
 results = mt.rows() 

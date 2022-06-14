@@ -27,12 +27,12 @@ library(tidyverse)
 "%!in%" = negate(`%in%`)
 
 #### load data
-plink = read.plink(bed= "results/datasets/vitk_pcadj_replications.bed",
+plink = read.plink(bed= "results/datasets/vitk90_pcadj_replications.bed",
                    #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                    #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                    na.strings = c("0", "-9"))
 
-hwe = fread("results/datasets/vitk_pcadj_replications.hwe") 
+hwe = fread("results/datasets/vitk90_pcadj_repliactions.hwe") # spelling error here 
 
 
 #### convert from plink to dataframe
@@ -55,6 +55,7 @@ pheno_geno =  pheno %>%
   mutate_if(grepl("chr", colnames(.)), list(~.-1)) %>% 
   mutate_if(grepl("chr", colnames(.)), list(~factor(.))) %>% 
   mutate_if(grepl("chr", colnames(.)), fct_rev) %>% 
+  mutate_if(grepl("chr", colnames(.)), as.numeric) %>% 
   mutate_at(vars(c(amio, ei, cyp_stars_gwas_raw, vkor_1639_gwas_imputed)), as.factor) 
   
 
@@ -94,7 +95,7 @@ results = models %>%
 
 
 #### load data
-plink_pr = read.plink(bed= "results/datasets/pr_vitk_pcadj_replications.bed",
+plink_pr = read.plink(bed= "results/datasets/pr_vitk90_pcadj_replications.bed",
                       #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                       #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                       na.strings = c("0", "-9"))
@@ -111,7 +112,7 @@ plink_df_pr = plink_pr[["genotypes"]] %>%
 pheno_pr = read_tsv("results/datasets/pr_covariates_31JAN22.txt") %>% 
   as.data.frame()
 
-hwe_pre = fread("results/datasets/pr_vitk_pcadj_replications.hwe")
+hwe_pre = fread("results/datasets/pr_vitk90_pcadj_replications.hwe")
 
 
 #### merge covariates and genotypes
@@ -122,6 +123,7 @@ pheno_geno_pr =  pheno_pr %>%
   mutate_if(grepl("chr", colnames(.)), list(~.-1)) %>% 
   mutate_if(grepl("chr", colnames(.)), list(~factor(.))) %>% 
   mutate_if(grepl("chr", colnames(.)), fct_rev) %>% 
+  mutate_if(grepl("chr", colnames(.)), as.numeric) %>% 
   mutate_at(vars(c(amio, ei, cyp_stars_gwas_imputed, vkor_1639_gwas_imputed)), as.factor)
 
 
