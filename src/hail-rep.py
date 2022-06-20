@@ -31,7 +31,7 @@ from bokeh.io import save
 
 data_path = 'vitk_phased_autosomes_lifted.90.vcf.gz'
 covar_filename = '../tractor3a_covariates_pr.txt'
-out_path = '2022-06-14_vitk_lm.90.LAadj_pr.tsv'
+out_path = '2022-06-18_vitk90_maf05_lmLAadj_pr.tsv'
 
 #### load GWAS data
 ds = hl.import_vcf(data_path, reference_genome='GRCh37', force_bgz = True)
@@ -76,11 +76,11 @@ mt = ds.annotate_entries(anc0dos = anc0dos[ds.locus, ds.s], anc1dos = anc1dos[ds
 mt = mt.annotate_cols(pheno = table[mt.s])
 
 #### write out mt to speed up the regressions later
-mt.write('phenos_genos_dosages.mt', overwrite = True)
+mt.write('phenos_genos90_dosages.mt', overwrite = True)
 
 
 #### read that mt back in 
-mt = hl.read_matrix_table('phenos_genos_dosages.mt')
+mt = hl.read_matrix_table('phenos_genos90_dosages.mt')
 
 
 #### stop here and comment out if doing PR data #### 

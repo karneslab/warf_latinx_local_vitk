@@ -1,10 +1,12 @@
-#### the output of hail.py makes a plink file here
-#### to sort for replicates for further analysis
+#### IN: output of hail.py
+#### OUT: plink query
 #### as a reminder the model is mt.pheno.dose,[1.0, mt.hapcounts0.x, mt.anc0dos.x, mt.hapcounts1.x, mt.anc1dos.x, mt.anc2dos.x]))
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
 #### 2022-03-04
-#### Last updated: 2022-06-14
+#### Last updated: 2022-06-19
+
+#### NEED TO UPDATE PLINK QUERY 
 
 
 #### load libraries
@@ -13,7 +15,7 @@ library(cowplot)
 
 #### load data
 lmResults = list.files('results/datasets',
-                       pattern = '2022-06-14',
+                       pattern = '06-18_vitk90_maf05',
                        full.names = T)
 lmResults = lmResults[lmResults != "*.png"]
 lmResults
@@ -45,11 +47,17 @@ cleanTractor = function(fileName) {
       mutate_at(vars(starts_with("anc2")), ~ gsub("]", "", ., fixed = T)) %>% ## remove all ] signs
       separate(variant, into = c("CHR", "BP", "REF", "ALT")) %>%
       mutate_at(vars(-REF,-ALT), as.numeric) %>%
-      # mutate(match = if_else((anc0.beta > 0 & anc1.beta > 0 & anc2.beta > 0) | (anc0.beta < 0 & anc1.beta < 0 & anc2.beta < 0),
-      #                        "yes",
-      #                        "no"
-      # )) %>%
-      filter(intercept.p_value < 0.0125) 
+      mutate(match = if_else((anc0.beta > 0 &
+                                anc1.beta > 0 &
+                                anc2.beta > 0) | (anc0.beta < 0 & anc1.beta < 0 & anc2.beta < 0),
+                             "yes",
+                             "no"
+      )) %>%
+      filter(if_any(
+        .cols = c("anc0.p_value", "anc1.p_value", "anc2.p_value"),
+        ~ . < 0.0125
+      ))  %>% 
+      filter(match == "yes")
     
     
   }
@@ -61,9 +69,10 @@ cleanTractor = function(fileName) {
   
 }
 
+
 tractordats <- lapply(lmResults, cleanTractor)
-az = tractordats[[1]]
-pr = tractordats[[2]]
+az = tractordats[[2]]
+pr = tractordats[[1]]
 
 
 print("Your data is clean :)")
@@ -84,31 +93,19 @@ replications = az %>%
   pivot_wider(names_from = stat,
               values_from = value) %>% 
   mutate(cohort = factor(cohort, levels = c("tucson", "sj"),
-                         labels = c("Tucson", "San Juan"))) %>% 
-  group_by(SNP) %>% 
-  add_count() %>% 
-  filter(n ==2) %>% # only keep SNPs genotyped in both cohorts 
-  arrange(SNP) %>% 
-  mutate(betamatch = if_else((intercept.beta > 0 & lag(intercept.beta)>0) |
-                               (intercept.beta < 0 & lag(intercept.beta) <0),
-                             "yes", "no")) %>% 
-  fill(betamatch, .direction = "up") %>% 
-  group_by(SNP) %>% 
-  filter(all(betamatch == "yes")) 
+                         labels = c("Tucson", "San Juan")))
 
 
-help = replications %>% 
-  select(SNP, cohort, starts_with("intercept"))
 
 ######## plink query
 replications  %>% 
   dplyr::select(SNP) %>% 
-  write_tsv("results/datasets/tractor_replications.txt", col_names = F)
+  write_tsv("results/datasets/vitk90_LAadj_maf5_replications.txt", col_names = T)
 
 
 #### write out summary stats
 replications %>% 
-  write_tsv("results/datasets/vitk_tractor_regression_replicates.tsv")
+  write_tsv("results/datasets/vitk90_LAadj_maf5_regression_replicates.tsv")
 
 
 

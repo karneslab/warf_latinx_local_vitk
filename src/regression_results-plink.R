@@ -1,9 +1,11 @@
-#####  MANHATTAN PLOTS from assoc files 
-##### H Steiner
+#### IN: linear.assoc files direct from PLINK
+#### OUT: plink-query.txt and .tsv input to table_replications.R
+#### H Steiner
 #### heidiesteiner@email.arizona.edu
-#### 2022-02-02
+#### Created: 2022-02-02
+#### Updated: 2022-06-19
 
-#### example PLINK command to lead this script
+#### example PLINK command to input into this script
 
 # for f in 80 90 99; do 
 # plink1.9 --vcf ../../data/imputed/topmed/phased_autosomes_lifted.$f.vcf.gz 
@@ -13,7 +15,6 @@
 # --ci 0.95 --covar ../plink_covariates.txt --covar-name PC1, PC2, PC3 
 # --extract range ../../candidate_genes/vitkgenes_plink.txt --const-fid
 # ;done
-
 
 
 #### load packages

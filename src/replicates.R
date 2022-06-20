@@ -1,12 +1,15 @@
-#### Explore SNPs that replicated between Tucson and San Juan
-#### follows regression_results.R
-#### this script plots! 
+#### IN: PLINK sourced GENOTYPES & HWE of replicated hits from PC-adj models
+#### (follows regression_results.R)
+#### OUT: Summary stats of replications after IWPC adjustment
+#### OUT: FIGURE, linear relationship y=dose,x=variant copies of each SNP in IN files
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
 #### Created 2022-03-13
+#### Updated 2022-06-19
 
-#### run the example below plink code to produce the results for this script
-# plink1.9 --bfile ../data/imputed/topmed/phased_autosomes_lifted --extract vitk_pcadj_replications.txt  --out vitk_pcadj_replications --make-bed
+
+#### run the EXAMPLE below plink code to produce the results for this script
+# plink1.9 --bfile ../data/imputed/topmed/phased_autosomes_lifted.90 --extract vitk_pcadj_replications.txt  --out vitk_pcadj_replications --make-bed
 
 #### Calculate Hardy weinberg at this step as well 
 # plink1.9 --bfile vitk_pcadj_replications --hardy --out vitk_pcadj_replications
@@ -27,12 +30,12 @@ library(tidyverse)
 "%!in%" = negate(`%in%`)
 
 #### load data
-plink = read.plink(bed= "results/datasets/vitk90_pcadj_replications.bed",
+plink = read.plink(bed= "results/datasets/vitk90_pcadj_maf05_replications.bed",
                    #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                    #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                    na.strings = c("0", "-9"))
 
-hwe = fread("results/datasets/vitk90_pcadj_repliactions.hwe") # spelling error here 
+hwe = fread("results/datasets/vitk90_pcadj_maf05_replications.hwe") # spelling error here 
 
 
 #### convert from plink to dataframe
@@ -95,7 +98,7 @@ results = models %>%
 
 
 #### load data
-plink_pr = read.plink(bed= "results/datasets/pr_vitk90_pcadj_replications.bed",
+plink_pr = read.plink(bed= "results/datasets/pr_vitk90_pcadj_maf05_replications.bed",
                       #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                       #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                       na.strings = c("0", "-9"))
@@ -112,7 +115,7 @@ plink_df_pr = plink_pr[["genotypes"]] %>%
 pheno_pr = read_tsv("results/datasets/pr_covariates_31JAN22.txt") %>% 
   as.data.frame()
 
-hwe_pre = fread("results/datasets/pr_vitk90_pcadj_replications.hwe")
+hwe_pre = fread("results/datasets/pr_vitk90_pcadj_maf05_replications.hwe")
 
 
 #### merge covariates and genotypes
@@ -162,9 +165,9 @@ results_pr = models %>%
 #### for ALL the Primary analysis replicated variants
 hits = results %>% 
   mutate(cohort = "Tucson",
-         SNP = str_sub(term, end = -2)) %>% 
+         SNP = str_sub(term, end = -1)) %>% 
   rbind(results_pr %>% mutate(cohort = "San Juan",
-                              SNP = str_sub(term, end = -2))) %>% 
+                              SNP = str_sub(term, end = -1))) %>% 
   group_by(term) %>% 
   add_count() %>% # finding unmatched SNPs
   filter(n == 2) # remove SNPs that are only represented by one cohort 
@@ -190,68 +193,31 @@ plot_dat = pheno_geno %>%
   pivot_longer(cols = starts_with("chr"), names_to = "SNP") %>% 
   mutate(SNP = str_sub(SNP, end = -5),
          value = factor(value,
-                        levels = c(2,1,0),
+                        levels = c(1,2,3),
                         labels = c("0","1","2"))) %>% 
   separate(SNP, into = c("chr", "pos"),remove = F) %>% 
-  mutate(SNP = as.factor(SNP), 
-         rsid = fct_recode(SNP,
-                          rs352892 = "chr2.143000356",
-                          rs352889 = "chr2.143002122",
-                          rs9688138 = "chr5.81377835",
-                          rs10942262 = "chr5.81379677",
-                          rs72819791 = "chr6.10493611",
-                          rs2445971 = "chr6.69706161" ,
-                          `chr6:69718121:A:T` = "chr6.69718121.", 
-                          rs2445972 = "chr6.69761455" ,
-                          rs72691561 = "chr9.21813242",
-                          rs72691562 = "chr9.21813304" ,
-                          rs72691563="chr9.21813496",
-                          rs72691564 = "chr9.21813519",
-                          rs7068224 = "chr10.26271173",
-                          rs79928732 = "chr10.69273916",
-                          rs28422950 = "chr10.69276516",
-                          rs619297 = "chr10.95197958",
-                          rs656155 = "chr10.95228249",
-                          rs7934133 = "chr11.86559043",
-                          rs4943945 = "chr11.86560403",
-                          rs4792446 = "chr17.14206724",
-                          rs4646342 = "chr17.17589958"),
-         gene = fct_recode(rsid,
-                           KYNU = "rs352892", 
-                           KYNU = "rs352889",
-                           ACOT12 = "rs9688138", 
-                           ACOT12 = "rs10942262", 
-                           `NA` =  "rs72819791", 
-                           LMBRD1 =  "rs2445971",
-                           LMBRD1 =  "chr6:69718121:A:T",
-                           LMBRD1 =  "rs2445972",
-                           MTAP =  "rs72691561", 
-                           MTAP = "rs72691562",
-                           MTAP = "rs72691563",
-                           MTAP = "rs72691564",
-                           GAD2 =  "rs7068224", 
-                           HK1 = "rs79928732",
-                           HK1 =  "rs28422950",
-                           ACSM6 = "rs619297",
-                           LOC107984257  = "rs656155", 
-                           ME3 = "rs7934133", 
-                           ME3 = "rs4943945", 
-                           COX10 = "rs4792446",
-                           PEMT = "rs4646342" )) 
+  mutate(rsid = as.factor(SNP)) %>% 
+  mutate(rsid = fct_recode(rsid, rs619297 = "chr10.95197958",
+                           rs650243 = "chr10.95205120",
+                           rs8050894 = "chr16.31093188",
+                           rs9934438 = "chr16.31093557",
+                           rs11078234 = "chr17.14207584"))
+
+# 
 
 #### but you can use the replicates here to decide which SNPs (if any) to highlight? 
-h1 = hits %>% 
+hits %>% 
   group_by(SNP) %>% 
   separate(SNP, into = c("chr", "pos", "a1", "a2"), sep = "\\.", remove = F) %>% 
   mutate(SNP = str_sub(SNP, end = -5) ) %>% 
-  inner_join(plot_dat %>% select(gene, chr, pos, rsid), c("chr", "pos")) %>% 
+  inner_join(plot_dat %>% select(chr, pos, rsid), c("chr", "pos")) %>% 
   inner_join(hwe_all %>% 
                mutate(SNP  = gsub(":", ".", SNP),SNP = str_sub(SNP, end = -5)) %>% 
                dplyr::select(SNP, P, cohort = study), by = c("SNP", "cohort")) %>% 
   distinct() %>% 
   unite( "allele", a1:a2) %>% 
   # select(gene, allele, cohort, estimate, std.error, p.value) %>% 
-  write_tsv("results/datasets/vitk_pcadj_replications_iwpc.tsv")
+  write_tsv("results/datasets/vitk90_maf05_replications_iwpcadj.tsv")
 
 
   
@@ -267,23 +233,29 @@ h1 = hits %>%
 
 #### testing this plot because there are more variants to see
 
-plot_dat  %>% 
-  ggplot(aes(value, dose, group = SNP, color = gene)) +
-  geom_jitter(alpha =.1, size = .4, width = .1, height = .05) +
-  geom_smooth( method = "lm", se = F ) + 
+plot_dat   %>% 
+  ggplot(aes(x=  value, y = dose, group = SNP, color = rsid)) +
+  geom_jitter(alpha =.2, size = .6, width = .1, height = .05) + 
+  stat_smooth(geom='line', se=FALSE, na.rm = T, span = 50,
+              position = position_jitter(seed = 90, width = .01, height = 1),
+              size = 1) + 
   facet_grid(~study) + 
   labs(x = "Variant Allele Copies", 
        y  = "Warfarin Dose (mg/week)", 
-       color = "Gene") + 
+       color = "SNP") + 
   guides(color = guide_legend(ncol = 1)) +
   theme_bw() +
   theme(
-    legend.position = c()
-  )
+    legend.position = c(),
+    strip.background = element_rect(fill = "transparent", color = "transparent"),
+    strip.text = element_text(size = "120%")
+  ) +
+  scale_color_viridis_d()
+
 
   
 ggsave(plot = last_plot(),
-       "results/plots/replicates_lines.png",
+       "results/plots/vitk90_PCadj_maf05_replicates_lines.png",
        width = 6,
        height = 6,
        unit = "in")

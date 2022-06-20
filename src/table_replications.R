@@ -1,8 +1,11 @@
-#### Create Table of replicates and IWPC adjustments
-#### follows replicates.R
+#### IN: replications_iwpc.tsvs from replicates.R and tractor_replicates.R
+#### IN: replications.tsvs from regression-results.R and tractor_regression-results.R
+#### OUT: 
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
-#### 2022-03-14
+#### Created: 2022-03-14
+#### Updated: 2022-06-19
+
 
 #### in table_clean, results are duplicated for different alleles in PC analysis 
 
@@ -12,13 +15,14 @@ library(arsenal)
 library(stringr)
 library(tidyverse)
 
-#### load data
-hits = read_tsv("results/datasets/vitk_pcadj_replications_iwpc.tsv") %>% 
+#### load plink data
+hits = read_tsv("results/datasets/vitk_pcadj_replications_iwpc.tsv") %>% ## after IWPC adjustment
   distinct()
-stats = read_tsv("results/datasets/vitk_pcadj_regression_replicates.tsv") 
+stats = read_tsv("results/datasets/vitk90_pcadj_maf5_regression_replicates.tsv") 
 
 
-tractor_hits = read_tsv("results/datasets/vitk_tractor_replications_iwpc.tsv")%>% 
+### load tractor data 
+tractor_hits = read_tsv("results/datasets/vitk_tractor_replications_iwpc.tsv")%>% ## after IWPC adjustment
   mutate(analysis = "Local Ancestry Adjusted Regressions")
 tractor_stats = read_tsv("results/datasets/vitk_tractor_regression_replicates.tsv")
 
