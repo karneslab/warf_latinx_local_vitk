@@ -29,9 +29,9 @@ from bokeh.io import save
 #### set path to data relative to where the plot will be made 
 
 
-data_path = '../../../../candidate_genes/vitk_phased_autosomes_lifted.80.vcf.gz'
+data_path = '../../../../candidate_genes/vitk_phased_autosomes_lifted.90.vcf.gz'
 covar_filename = '../2022-02-17/tractor3a_covariates_az.txt'
-out_path = '2022-06-18_vitk80_maf01_lmLAadj.tsv'
+out_path = '2022-06-20_vitk90_maf05_lmLAadj.tsv'
 
 #### load GWAS data
 ds = hl.import_vcf(data_path, reference_genome='GRCh37', force_bgz = True)
@@ -47,24 +47,24 @@ table = (hl.import_table(covar_filename, impute=True).key_by('plate_id'))
 #### put together genotype information
 #### by ancestry 
 row_fields={'CHROM': hl.tstr, 'POS': hl.tint, 'ID': hl.tstr, 'REF': hl.tstr, 'ALT': hl.tstr} 
-anc0dos = hl.import_matrix_table('phased_autosomes_lifted.80.anc0.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc0dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc0.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc0dos = anc0dos.key_rows_by().drop('row_id')
 anc0dos = anc0dos.key_rows_by(locus=hl.locus(anc0dos.CHROM, anc0dos.POS)) 
 
-anc1dos = hl.import_matrix_table('phased_autosomes_lifted.80.anc1.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc1dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc1.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc1dos = anc1dos.key_rows_by().drop('row_id')
 anc1dos = anc1dos.key_rows_by(locus=hl.locus(anc1dos.CHROM, anc1dos.POS)) 
 
-anc2dos = hl.import_matrix_table('phased_autosomes_lifted.80.anc2.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
+anc2dos = hl.import_matrix_table('phased_autosomes_lifted.90.anc2.dosage.txt', row_fields=row_fields,row_key=[], min_partitions=32)
 anc2dos = anc2dos.key_rows_by().drop('row_id')
 anc2dos = anc2dos.key_rows_by(locus=hl.locus(anc2dos.CHROM, anc2dos.POS)) 
 
 row_fields={'CHROM': hl.tstr, 'POS': hl.tint, 'ID': hl.tstr} 
-hapcounts0 = hl.import_matrix_table('80.anc0.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
+hapcounts0 = hl.import_matrix_table('90.anc0.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
 hapcounts0 = hapcounts0.key_rows_by().drop('row_id')
 hapcounts0 = hapcounts0.key_rows_by(locus=hl.locus(hapcounts0.CHROM, hapcounts0.POS)) 
 
-hapcounts1 = hl.import_matrix_table('80.anc1.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
+hapcounts1 = hl.import_matrix_table('90.anc1.hapcount.hail.txt',  row_fields=row_fields, row_key=[], min_partitions=32) 
 hapcounts1 = hapcounts1.key_rows_by().drop('row_id')
 hapcounts1 = hapcounts1.key_rows_by(locus=hl.locus(hapcounts1.CHROM, hapcounts1.POS)) 
 
@@ -76,11 +76,11 @@ mt = ds.annotate_entries(anc0dos = anc0dos[ds.locus, ds.s], anc1dos = anc1dos[ds
 mt = mt.annotate_cols(pheno = table[mt.s])
 
 #### write out mt to speed up the regressions later
-mt.write('phenos_genos.80_dosages.mt', overwrite = True)
+mt.write('phenos_genos.90_dosages.mt', overwrite = True)
 
 
 #### read that mt back in 
-mt = hl.read_matrix_table('phenos_genos.80_dosages.mt')
+mt = hl.read_matrix_table('phenos_genos.90_dosages.mt')
 
 
 #### stop here and comment out if doing PR data #### 
@@ -95,7 +95,7 @@ mt = mt.filter_entries(mt.s != '0_0_WARFER034_1767-JK_Karnes_MEGA_Plate_01_E05_W
 #### QC steps 
 mt = hl.variant_qc(mt)
 mt = mt.filter_rows(mt.variant_qc.p_value_hwe > 1e-6)
-mt = mt.filter_rows(mt.variant_qc.AF[1] > 0.01)
+mt = mt.filter_rows(mt.variant_qc.AF[1] > 0.05)
 
 
 
@@ -104,10 +104,10 @@ mt = mt.annotate_rows(unadj = hl.agg.linreg(mt.pheno.dose,[1.0, mt.hapcounts0.x,
 
 #### remove later if find bug? 
 #### write out mt to speed up  later
-mt.write('phenos_genos_dosages80_qc-maf01_vitk_lm-LAadj.mt', overwrite = True)
+mt.write('phenos_genos_dosages90_qc-maf05_vitk_lm-LAadj.mt', overwrite = True)
 
 #### read that mt back in 
-mt = hl.read_matrix_table('phenos_genos_dosages80_qc-maf01_vitk_lm-LAadj.mt')
+mt = hl.read_matrix_table('phenos_genos_dosages90_qc-maf05_vitk_lm-LAadj.mt')
 
 #### export steps 
 results = mt.rows() 

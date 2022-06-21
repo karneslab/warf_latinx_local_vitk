@@ -31,7 +31,7 @@ from bokeh.io import save
 
 data_path = 'vitk_phased_autosomes_lifted.90.vcf.gz'
 covar_filename = '../tractor3a_covariates_pr.txt'
-out_path = '2022-06-18_vitk90_maf05_lmLAadj_pr.tsv'
+out_path = '2022-06-20_vitk90_maf05_lmLAadj_pr.tsv'
 
 #### load GWAS data
 ds = hl.import_vcf(data_path, reference_genome='GRCh37', force_bgz = True)

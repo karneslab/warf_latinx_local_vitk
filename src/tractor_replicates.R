@@ -1,13 +1,15 @@
-#### Explore SNPs that replicated between Tucson and San Juan in Tractor
-#### follows tractor_regression_results.R
+#### IN: PLINK files of genotypes at replicated sites in tractor_regression_results.R 
+#### OUT: FIGURE LA-ADJ REPLICATIONS ASSOCATION W/ DOSE, IWPC adjusted summary stats
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
-#### updated 2022-03-06
+#### created 2022-03-06
+#### updated 2022-06-20
 
 #### run the below plink code to produce the results for this script
-# plink1.9 --bfile ../data/imputed/topmed/phased_autosomes_lifted 
-# --extract tractor_replications.txt --out tractor_vitk_replications 
-# --make-bed
+### need to first create new rsids on autosomes files
+# for i in {0..2}; do cut -f4,5 --complement phased_autosomes_lifted.80.anc${i}.hapcount.txt > 80.anc${i}.hapcount.hail.txt; done
+# plink1.9 --vcf ../../data/imputed/topmed/phased_autosomes_lifted.90.rsid37.vcf.gz --extract vitk90_LAadj_maf5_replications.txt --out vitk90_LAadj_replications --make-bed --const-fid
+
 
 #### load libraries
 library(broom)
@@ -26,7 +28,7 @@ library(tidyverse)
 "%!in%" = negate(`%in%`)
 
 #### load data
-plink = read.plink(bed= "results/datasets/tractor_vitk_replications.bed",
+plink = read.plink(bed= "results/datasets/vitk90_LAadj_replications.bed",
                    #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                    #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                    na.strings = c("0", "-9"))
@@ -37,7 +39,8 @@ plink_df = plink[["genotypes"]] %>%
   as.matrix() %>% 
   as.data.frame() %>% 
   rownames_to_column() %>% 
-  rename(IID = rowname)
+  rename(IID = rowname) %>% 
+  rename_with(.cols = c(c(everything(), -IID)), ~ paste0("chr", .x))
 
 
 #### load covariates file 
@@ -93,7 +96,7 @@ results = models %>%
 
 
 #### load data
-plink_pr = read.plink(bed= "results/datasets/pr_tractor_vitk_replications.bed",
+plink_pr = read.plink(bed= "results/datasets/pr_vitk90_LAadj_replications.bed",
                       #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                       #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                       na.strings = c("0", "-9"))
@@ -104,7 +107,8 @@ plink_df_pr = plink_pr[["genotypes"]] %>%
   as.matrix() %>% 
   as.data.frame() %>% 
   rownames_to_column() %>% 
-  rename(IID = rowname)
+  rename(IID = rowname)%>% 
+  rename_with(.cols = c(c(everything(), -IID)), ~ paste0("chr", .x))
 
 
 #### covariates
@@ -154,16 +158,21 @@ models <- myvars_pr %>%
 results_pr = models %>% 
   filter(grepl("chr", term))
 
+
 #### check for replicates
-results%>% 
+reps = results%>% 
   mutate(cohort = "Tucson") %>% 
-  rbind(results_pr %>% mutate(cohort = "San Juan")) %>% 
+  rbind(results_pr %>% mutate(cohort = "San Juan"))
+
+reps %>% 
   write_tsv("results/datasets/vitk_tractor_replications_iwpc.tsv")
   
 
 
 
 #### plot
+
+#### PLOT NEEDS GENES! 
 
 pheno_geno %>% 
   select(IID, dose, starts_with("chr")) %>% 
@@ -173,29 +182,23 @@ pheno_geno %>%
           mutate(study = "San Juan, PR")) %>% 
   mutate(study = factor(study, levels = c("Tucson, AZ", "San Juan, PR"))) %>% 
   pivot_longer(cols = starts_with("chr"), names_to = "SNP") %>% 
-  ggplot(aes(x = value, 
-             y = dose, 
-             group = value)) + 
-  geom_boxplot(aes(fill = value), 
-               outlier.shape = NA,
-               alpha = .5,
-               color = "gray30") +
-  geom_jitter(aes(color = value), 
-              width=0.1,
-              show.legend = F) + 
-  facet_grid(SNP~study) + 
-  labs(x = "Variant Alleles (rs34075240)", 
+  ggplot(aes(x=  value, y = dose, group = SNP, color = SNP)) +
+  geom_jitter(alpha =.2, size = .6, width = .1, height = .05) + 
+  stat_smooth(geom='line', se=FALSE, na.rm = T, span = 50,
+              position = position_jitter(seed = 90, width = .01, height = 1),
+              size = 1) + 
+  facet_grid(~study) + 
+  labs(x = "Variant Allele Copies", 
        y  = "Warfarin Dose (mg/week)", 
-       color = "Variant Copies",
-       fill = "Variant Copies") + 
+       color = "SNP") + 
+  guides(color = guide_legend(ncol = 1)) +
   theme_bw() +
   theme(
-    legend.position = "none",
-    strip.background = element_blank(),
-    strip.text = element_blank()
-  )
-
-
+    legend.position = c(),
+    strip.background = element_rect(fill = "transparent", color = "transparent"),
+    strip.text = element_text(size = "120%")
+  ) +
+  scale_color_viridis_d()
 
 ggsave(plot = last_plot(),
        "results/plots/tractor_replicates_boxplot.png",

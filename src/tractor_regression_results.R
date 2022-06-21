@@ -4,18 +4,18 @@
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
 #### 2022-03-04
-#### Last updated: 2022-06-19
+#### Last updated: 2022-06-20
 
-#### NEED TO UPDATE PLINK QUERY 
-
+### plink query only works in discovery? 
 
 #### load libraries
 library(tidyverse)
 library(cowplot)
 
+
 #### load data
 lmResults = list.files('results/datasets',
-                       pattern = '06-18_vitk90_maf05',
+                       pattern = '06-20_vitk90_maf05',
                        full.names = T)
 lmResults = lmResults[lmResults != "*.png"]
 lmResults
@@ -98,8 +98,12 @@ replications = az %>%
 
 
 ######## plink query
-replications  %>% 
+
+replications_out = replications %>% 
   dplyr::select(SNP) %>% 
+  mutate(SNP = gsub("chr", "", SNP))
+
+replications_out %>% 
   write_tsv("results/datasets/vitk90_LAadj_maf5_replications.txt", col_names = T)
 
 
