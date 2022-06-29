@@ -1,9 +1,12 @@
-#### the output of hail_autosomes_lm.py makes manhattan plots here
-#### as a reminder the model is mt.pheno.dose,[1.0, mt.hapcounts0.x, mt.anc0dos.x, mt.hapcounts1.x, mt.anc1dos.x, mt.anc2dos.x]))
-#### Heidi Steiner
+#### IN: the output of hail.py
+#### OUT: 3x2 Manhattan panel, ancestry by cohort
 #### heidiesteiner@email.arizona.edu
 #### 2022-02-22
-#### Last Update: 2022-03-08
+#### Last Update: 2022-06-21
+
+
+### SVG didn't print here !!! 
+
 
 #### load libraries
 library(tidyverse)
@@ -17,7 +20,7 @@ library(cowplot)
 #                           "\t", escape_double = FALSE, trim_ws = TRUE)
 
 
-lmResults <- list.files('results/datasets', pattern = '2022-03-01_vitk_lmunadj', full.names = T)
+lmResults <- list.files('results/datasets', pattern = '2022-06-20', full.names = T)
 lmResults = lmResults[lmResults != "*.png"]
 lmResults
 
@@ -216,7 +219,7 @@ cowplot_wlegend = plot_grid(cowplot,
 print("Plotting now :)")
 
 ggsave(
-  filename = "results/plots/hail_tractor_manhattans_2022-03-01_vitk.png",
+  filename = "results/plots/manhattan_panel_LAadj.png",
   plot = print(cowplot_wlegend),
   height = 9,
   width = 10,
@@ -224,3 +227,15 @@ ggsave(
   device = png,
   bg = "transparent"
 )
+
+
+ggsave(
+  filename = "results/plots/manhattan_panel_LAadj.svg",
+  plot = print(cowplot_wlegend),
+  height = 9,
+  width = 10,
+  units = "in",
+  device = svg,
+  bg = "transparent"
+)
+

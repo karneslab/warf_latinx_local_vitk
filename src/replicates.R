@@ -87,7 +87,7 @@ models <- myvars %>%
   bind_rows() %>% 
   
   #### round all numeric columns
-  mutate(across(where(is.numeric), round, digits = 2))
+  mutate(across(c(estimate, std.error, statistic), round, digits = 2))
 
 #### save results
 results = models %>% 
@@ -155,7 +155,7 @@ models <- myvars_pr %>%
   bind_rows() %>% 
   
   # round all numeric columns
-  mutate(across(where(is.numeric), round, digits = 2))
+  mutate(across(c(estimate, std.error, statistic), round, digits = 2))
 
 #### save results
 results_pr = models %>% 

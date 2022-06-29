@@ -3,7 +3,7 @@
 #### Heidi Steiner
 #### heidiesteiner@email.arizona.edu
 #### created 2022-03-06
-#### updated 2022-06-20
+#### updated 2022-06-25
 
 #### run the below plink code to produce the results for this script
 ### need to first create new rsids on autosomes files
@@ -15,6 +15,7 @@
 library(broom)
 library(car)
 library(cowplot)
+library(data.table)
 library(snpStats)
 library(tidyverse)
 
@@ -32,6 +33,8 @@ plink = read.plink(bed= "results/datasets/vitk90_LAadj_replications.bed",
                    #bim = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.bim",
                    #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                    na.strings = c("0", "-9"))
+
+hwe = fread("results/datasets/vitk90_LAadj_replications.hwe") # spelling error here 
 
 
 #### convert from plink to dataframe
@@ -58,6 +61,7 @@ pheno_geno =  pheno %>%
                                                     levels = c("0", "1","2"),
                                                     labels = c("2", "1", "0")))) %>% 
   mutate_if(grepl("chr", colnames(.)), fct_rev) %>% 
+  mutate_if(grepl("chr", colnames(.)), as.numeric) %>% 
   mutate_at(vars(c(amio, ei, cyp_stars_gwas_raw, vkor_1639_gwas_imputed)), as.factor)
 
 
@@ -85,7 +89,7 @@ models <- myvars %>%
   bind_rows() %>% 
   
   #### round all numeric columns
-  mutate(across(where(is.numeric), round, digits = 2))
+  mutate(across(c(estimate, std.error, statistic), round, digits = 2))
 
 #### save results
 results = models %>% 
@@ -101,6 +105,8 @@ plink_pr = read.plink(bed= "results/datasets/pr_vitk90_LAadj_replications.bed",
                       #  fam = "/Users/heidisteiner/WORK/Warfarin/GWAS/Candidate_Genes/tractorreplications.fam",
                       na.strings = c("0", "-9"))
 
+
+hwe_pr = fread("results/datasets/pr_vitk90_LAadj_replications.hwe") 
 
 #### convert from plink to dataframe
 plink_df_pr = plink_pr[["genotypes"]] %>% 
@@ -125,6 +131,7 @@ pheno_geno_pr =  pheno_pr %>%
                                                     levels = c("0", "1","2"),
                                                     labels = c("2", "1", "0")))) %>% 
   mutate_if(grepl("chr", colnames(.)), fct_rev) %>% 
+  mutate_if(grepl("chr", colnames(.)), as.numeric) %>% 
   mutate_at(vars(c(amio, ei, cyp_stars_gwas_imputed, vkor_1639_gwas_imputed)), as.factor)
 
 #### fix column names
@@ -152,7 +159,7 @@ models <- myvars_pr %>%
   bind_rows() %>% 
   
   # round all numeric columns
-  mutate(across(where(is.numeric), round, digits = 2))
+  mutate(across(c(estimate, std.error, statistic), round, digits = 2))
 
 #### save results
 results_pr = models %>% 
@@ -164,17 +171,27 @@ reps = results%>%
   mutate(cohort = "Tucson") %>% 
   rbind(results_pr %>% mutate(cohort = "San Juan"))
 
+hwe_all = hwe %>% 
+  mutate(cohort = "Tucson") %>% 
+  full_join(hwe_pr %>% mutate(cohort = "San Juan")) %>% 
+  mutate(SNP = gsub(":", ".", SNP),
+         term = paste0("chr", SNP)) %>% 
+  select(term, P, cohort)
+
+reps = reps %>% 
+  inner_join(hwe_all)
+
+View(reps)
+
 reps %>% 
   write_tsv("results/datasets/vitk_tractor_replications_iwpc.tsv")
   
 
 
 
-#### plot
+#### plots
 
-#### PLOT NEEDS GENES! 
-
-pheno_geno %>% 
+plot_dat = pheno_geno %>% 
   select(IID, dose, starts_with("chr")) %>% 
   mutate(study = "Tucson, AZ") %>% 
   rbind(pheno_geno_pr  %>% 
@@ -182,26 +199,71 @@ pheno_geno %>%
           mutate(study = "San Juan, PR")) %>% 
   mutate(study = factor(study, levels = c("Tucson, AZ", "San Juan, PR"))) %>% 
   pivot_longer(cols = starts_with("chr"), names_to = "SNP") %>% 
-  ggplot(aes(x=  value, y = dose, group = SNP, color = SNP)) +
-  geom_jitter(alpha =.2, size = .6, width = .1, height = .05) + 
-  stat_smooth(geom='line', se=FALSE, na.rm = T, span = 50,
-              position = position_jitter(seed = 90, width = .01, height = 1),
-              size = 1) + 
-  facet_grid(~study) + 
-  labs(x = "Variant Allele Copies", 
-       y  = "Warfarin Dose (mg/week)", 
-       color = "SNP") + 
-  guides(color = guide_legend(ncol = 1)) +
+  mutate(gene = if_else(str_starts(SNP, "chr1.656"), "AK4", 
+                        if_else(str_starts(SNP, "chr16.311"), "VKORC1",
+                                if_else(str_starts(SNP, "chr2.750"), "HK2",
+                                        if_else(str_starts(SNP, "chr5.180"), "MGAT1",
+                                                if_else(str_starts(SNP, "chr11.747"), "NEU3/OR2AT2P",
+                                                        if_else(str_starts(SNP, "chr18.442"), "ST8SIA5", "No gene identified")))))),
+         rsid = if_else(str_detect(SNP, "3879"), "rs2744574", 
+                        if_else(str_detect(SNP, "1995"), "rs2744573", "nana"))) %>% 
+  group_by(gene,value) %>% 
+  mutate(mean_dose = mean(dose)) %>% 
+  ungroup() 
+
+### boxes
+
+plot_dat %>% 
+  ggplot(aes(x = factor(value), 
+             y = dose, 
+             group = factor(value))) + 
+  geom_jitter( 
+    width=0.1,
+    show.legend = F,
+    alpha= .2) + 
+  geom_boxplot(
+               outlier.shape = NA,
+               alpha = .5,
+               color = "gray30") +
+
+  facet_grid(gene~study) + 
+  labs(x = "Variant Copies", 
+       y  = "Warfarin Dose (mg/week)") + 
   theme_bw() +
   theme(
-    legend.position = c(),
+    legend.position = "none",
     strip.background = element_rect(fill = "transparent", color = "transparent"),
-    strip.text = element_text(size = "120%")
-  ) +
-  scale_color_viridis_d()
+    strip.text.x = element_text(size = "120%"),
+    strip.text.y = element_text(size = 8)
+  )
+
+### lines 
+
+# plot_dat %>%  
+#   ggplot(aes(x=  value, y = dose, group = gene, color = gene)) +
+#   geom_jitter(alpha =.05, size = .6, width = .1, height = .05) + 
+#   # stat_smooth(geom='line', se=FALSE, na.rm = T, span = 50,
+#   #             position = position_jitter(seed = 90, width = .01, height = 1),
+#   #             size = 1,n=3) +
+#   geom_point(aes(x = value, y = mean_dose)) +
+#   geom_line(aes(x = value, y = mean_dose)) +
+#   
+#   
+#   facet_grid(~study) + 
+#   labs(x = "Variant Allele Copies", 
+#        y  = "Warfarin Dose (mg/week)", 
+#        color = "Gene") + 
+#   guides(color = guide_legend(ncol = 1)) +
+#   theme_bw() +
+#   theme(
+#     legend.position = c(),
+#     strip.background = element_rect(fill = "transparent", color = "transparent"),
+#     strip.text = element_text(size = "120%")
+#   ) +
+#   scale_color_viridis_d()
 
 ggsave(plot = last_plot(),
-       "results/plots/tractor_replicates_boxplot.png",
+       "results/plots/vitk90_LAadj_maf05_replicates_boxes.png",
        width = 6,
-       height = 6,
+       height = 7,
        unit = "in")
