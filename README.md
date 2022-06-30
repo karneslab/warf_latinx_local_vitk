@@ -68,6 +68,8 @@ wouldn’t contain a1, a2 in the SNP ID column
 
     bcftools annotate -Ov -x 'ID' -I +'%CHROM:%POS' data_snpsonly_clean.vcf > data_snpsonly_clean_chrpos.vcf
 
+changing this to `-Oz` and adding `.gz` to the end would zip this file.
+
 Next, I ran the checkvcf script
 
     python2 /home/steiner/GWAS_MAY2021/data/preimpute/checkVCF.py -r /home/steiner/GWAS_MAY2021/data/preimpute/hs37d5.fa -o test data_snpsonly_clean_chrpos.vcf; done 
@@ -233,36 +235,29 @@ via
 
     for f in 80 90 99; do paste -d ' ' bed_list_a.$f.txt bed_list_b.$f.txt > bed_list.$f.txt;done
 
-plot karyograms
+`cd` back out to plot karyograms
 
-    cat ../study.sample | while read line; do \
+    for f in 80 90 99; do cat ../../study.sample | while read line; do \
     python2 /home/karnes/general/ancestry_pipeline/plot_karyogram1.py \
     --bed_a plots/$line.A.bed \
     --bed_b plots/$line.B.bed \
     --ind $line \
     --centromeres /home/karnes/general/ancestry_pipeline/centromeres_hg19.bed \
-    --pop_order IBS,NAT \
-    --out plots/$line.png ;done
+    --pop_order IBS,NAT,YRI \
+    --out plots/$line.$f.png ;done; done
 
 ### Global Ancestry Estimates
 
 and obtain global ancestry estimates
 
-    for POP in IBS,NAT; do python2 /home/karnes/general/ancestry_pipeline/lai_global_f.py \
-    --bed_list bed_list.txt \
-    --ind_list ../../study.sample \
-    --pops IBS,NAT \
-    --out lai_global.txt; done
+    for f in 80 90 99; do for POP in IBS,NAT; do python2 /home/karnes/general/ancestry_pipeline/lai_global_f.py \
+    --bed_list bed_list.$f.txt \
+    --ind_list ../../../study.sample \
+    --pops IBS,NAT,YRI \
+    --out ../lai_global.$f.txt; done; done
 
 The lai\_global\_f.py script was updated by John Feng to fit the bed
 files I produced above.
-
-### Optional: Admixture
-
-double check with
-[admixture](http://dalexander.github.io/admixture/admixture-manual.pdf)
-
-    admixture ibs_nat_warf_merge.bed 2 --supervised  --j4
 
 ## Tractor
 
@@ -276,7 +271,7 @@ Elizabeth Atkinson)
 
 as per [Dr. Atkinson](https://github.com/eatkinson/Tractor), again
 
-    for f in 80 90 99; do python3 /home/steiner/GWAS_MAY2021/Tractor/ExtractTracts.py --msp autosomes --vcf /home/steiner/GWAS_MAY2021/data/imputed/topmed/phased_autosomes_lifted --zipped --num-ancs 3; done
+    for f in 80 90 99; do python3 /home/steiner/GWAS_MAY2021/Tractor/ExtractTracts.py --msp autosomes --vcf /home/steiner/GWAS_MAY2021/data/imputed/topmed/phased_autosomes_lifted.80 --zipped --num-ancs 3; done
 
     mv /home/steiner/GWAS_MAY2021/data/imputed/topmed/*anc* /home/steiner/GWAS_MAY2021/Tractor/runs/ibs_nat_yri/
 
@@ -294,6 +289,32 @@ ExtractTracts.py prior to running hail
 **STOP**: Need to filter vcf for vitamin K gene variants prior to
 running hail
 
-    plink1.9 --vcf /home/steiner/GWAS_MAY2021/data/imputed/topmed/phased_autosomes_lifted.vcf.gz --extract range /home/steiner/GWAS_MAY2021/candidate_genes/vitkgenes_plink.txt --recode vcf-iid bgz --double-id --out /home/steiner/GWAS_MAY2021/data/imputed/topmed/vitk_phased_autosomes_lifted
+    plink1.9 --vcf /home/steiner/GWAS_MAY2021/data/imputed/topmed/phased_autosomes_lifted.80.vcf.gz --extract range /home/steiner/GWAS_MAY2021/candidate_genes/vitkgenes_plink.txt --recode vcf-iid bgz --double-id --out /home/steiner/GWAS_MAY2021/candidate_genes/vitk_phased_autosomes_lifted.80
 
-The non-local ancestry adjusted regressions can be run with `lm.R` in R
+Then we run the non-local ancestry adjusted models in `plink` with
+something like:
+
+    for f in 80 90 99; do plink1.9 --vcf ../../data/imputed/topmed/phased_autosomes_lifted.$f.vcf.gz --pheno ../plink_covariates.txt --linear --pheno-name dose --allow-no-sex --remove ../../Tractor/runs/ibs_nat/plink/fail_IDs.txt --maf 0.05 --hwe 1e-6  --out vitk.$f_PCadjusted_maf5_hwe6_rmdoseoutliers --ci 0.95 --covar ../plink_covariates.txt --covar-name PC1, PC2, PC3 --hide-covar --extract range ../../candidate_genes/vitkgenes_plink.txt --const-fid; done
+
+From here, the goal is to narrow down on SNPs that might actually have
+an effect when we can’t really use bonferroni cutoffs to do this because
+of extremely low power. Filter through each `linear.assoc` file and find
+variants that meet a threshold of p &lt; 0.0125 in both cohorts while
+retaining effects in the same direction with `regression_results.R`.
+
+Then narrow down the Tractor model hits with
+`tractor_regression_results.R`. Again we’ll filter variants that meet a
+liberal threshold - we’ll hold that to variants that meet that threshold
+in any tested founder ancestry (the p values are separated by ancestry)
+
+Take the SNP IDs from each of these “hits”, in both PC and LA adjusted
+models, and pull the genotypes for each individual for further examine
+the effect in the cohort. Use something like
+`{bash} plink1.9 --vcf ../../data/imputed/topmed/phased_autosomes_lifted.90.vcf.gz --const-fid --extract vitk_pcadj_replications.txt  --out vitk90_pcadj_replications --make-bed`
+for example and then plot with the `replicates.R` and
+`tractor_replicates.R` scripts. We’ll also get the hardy weinberg
+estimates, here. Use
+`{bash} plink1.9 --bfile vitk90_pcadj_replications --hardy --out vitk90_pcadj_replications`
+
+Stop here! The plink query isn’t working for the hail results. Need to
+update build info?
