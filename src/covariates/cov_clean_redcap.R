@@ -12,7 +12,7 @@ library(REDCapR)
 #### helpful resource for REDCapR 
 #### https://github.com/nutterb/redcapAPI/wiki 
 tucson_clinical <- redcap_read(redcap_uri="https://redcap.uahs.arizona.edu/api/", 
-                               token="023F8FB7D25A42F1C4E8996484A0CC6F",
+                               token = #, 
                                verbose = F,
                                raw_or_label_headers = "label")$data %>% 
   select(-`Date of Birth`, -`Initials...3`, -`Complete?...87`, -`Complete?...99`) %>% # remove PHI before it loads
