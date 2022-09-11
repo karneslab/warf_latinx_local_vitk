@@ -36,7 +36,7 @@ p1 = datalong %>%
   ggplot(aes(x=IID, y = value, group = IID)) + 
   
   geom_col(aes(fill = ancestry), width=2)+
-  scale_fill_viridis_d(option = "D")+
+  scale_fill_grey() + 
   
   scale_y_continuous(expand = c(0,0))+
   
@@ -79,7 +79,7 @@ datalong_pr = data_pr %>%
 p2 = datalong_pr %>%
   ggplot(aes(x=IID, y = value, group = IID)) + 
   geom_col(aes(fill = ancestry), width=2)+
-  scale_fill_viridis_d(option ="D")+
+  scale_fill_grey() + 
   labs( x = "Individuals", fill = "Reference \nPopulations")+
   scale_y_continuous(expand = c(0,0))+
   theme(axis.text.x = element_blank( ),
@@ -112,7 +112,7 @@ p3 = datalong_merge %>%
   ggplot(aes(x=IID, y = value, group = IID)) + 
   
   geom_col(aes(fill = ancestry), width=2)+
-  scale_fill_viridis_d(option ="D")+
+  # scale_fill_grey() + 
   scale_y_continuous(expand = c(0,0))+
   
   labs(y = "Ancestry Proportion", x = "Individuals", fill = "Reference \nPopulations")+
@@ -139,9 +139,9 @@ p3
 cowplot = plot_grid(p1, p2, nrow = 1, rel_widths = 1:1)
 
 #### write out plots 
-ggsave( "results/plots/global.png", 
+ggsave( "results/plots/global.tif", 
         p3,
         width = 8,
         height = 8,
         unit = "in",
-        device = "png")
+        device = "tiff")

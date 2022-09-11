@@ -206,7 +206,8 @@ plot_dat = pheno_geno %>%
                                                 if_else(str_starts(SNP, "chr11.747"), "NEU3/OR2AT2P",
                                                         if_else(str_starts(SNP, "chr18.442"), "ST8SIA5", "No gene identified")))))),
          rsid = if_else(str_detect(SNP, "3879"), "rs2744574", 
-                        if_else(str_detect(SNP, "1995"), "rs2744573", "nana"))) %>% 
+                        if_else(str_detect(SNP, "1995"), "rs2744573", "nana")),
+         value = value - 1) %>% 
   group_by(gene,value) %>% 
   mutate(mean_dose = mean(dose)) %>% 
   ungroup() 

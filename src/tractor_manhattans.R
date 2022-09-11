@@ -59,7 +59,7 @@ TractorManhattans <- function(fileName) {
                    sep = ",")
       }) %>%
       bind_cols() %>%
-      bind_cols(data %>% select(-beta,-standard_error,-t_stat,-p_value)) %>% ## bind original data (except rows we just separated)
+      bind_cols(data %>% dplyr::select(-beta,-standard_error,-t_stat,-p_value)) %>% ## bind original data (except rows we just separated)
       # sample_frac(.1) %>%  ## comment out when ready to push to server
       mutate_at(vars(starts_with("intercept")), ~ gsub("[", "", ., fixed = T)) %>% ## remove all [ signs
       mutate_at(vars(starts_with("anc2")), ~ gsub("]", "", ., fixed = T)) %>% ## remove all ] signs
@@ -102,7 +102,7 @@ TractorManhattans <- function(fileName) {
         levels = c("anc0", "anc1", "anc2"),
         labels = c('IBS', 'NAT', 'YRI')
       )) %>%
-      select(-intercept,-hap0,-hap1) %>%
+      dplyr::select(-intercept,-hap0,-hap1) %>%
       pivot_wider(names_from = "stat", values_from = "value")
   }
   
@@ -174,7 +174,7 @@ TractorManhattans <- function(fileName) {
           
         )
       ) +
-      labs(x = "", y = "", color = "Beta")
+      labs(x = "Chromosomal Position", y = "-log10(P-value)", color = "Beta")
   }
   
   plotN <- anc_manhattans(plot_dat)
@@ -217,25 +217,25 @@ cowplot_wlegend = plot_grid(cowplot,
 # cowplot_wlegend
 
 print("Plotting now :)")
+# 
+# ggsave(
+#   filename = "results/plots/manhattan_panel_LAadj.png",
+#   plot = print(cowplot_wlegend),
+#   height = 9,
+#   width = 10,
+#   units = "in",
+#   device = png,
+#   bg = "transparent"
+# )
+
 
 ggsave(
-  filename = "results/plots/manhattan_panel_LAadj.png",
+  filename = "results/plots/manhattan_panel_LAadj.tif",
   plot = print(cowplot_wlegend),
   height = 9,
   width = 10,
   units = "in",
-  device = png,
-  bg = "transparent"
-)
-
-
-ggsave(
-  filename = "results/plots/manhattan_panel_LAadj.svg",
-  plot = print(cowplot_wlegend),
-  height = 9,
-  width = 10,
-  units = "in",
-  device = svg,
+  device = "tiff",
   bg = "transparent"
 )
 

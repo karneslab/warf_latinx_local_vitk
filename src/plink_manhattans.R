@@ -131,22 +131,22 @@ p1 = ggplot(don, aes(x=BPcum, y=-log10(P))) +
 
 p1
 
-ggsave(p1, 
-       filename = "results/plots/manhattan_panel_PCadj.png", 
-       width = 10, 
-       height = 9, 
-       units = "in",
-       device = "png",
-       bg = "transparent"
-       )
+# ggsave(p1, 
+#        filename = "results/plots/manhattan_panel_PCadj.png", 
+#        width = 10, 
+#        height = 9, 
+#        units = "in",
+#        device = "png",
+#        bg = "transparent"
+#        )
 
 
 ggsave(p1, 
-       filename = "results/plots/manhattan_panel_PCadj.svg", 
+       filename = "results/plots/manhattan_panel_PCadj.tif", 
        width = 10, 
        height = 9, 
        units = "in",
-       device = "svg",
+       device = "tiff",
        bg = "transparent"
 )
 
